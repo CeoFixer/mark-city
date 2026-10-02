@@ -1,7 +1,7 @@
 import {emptyCity,loadCity,saveCity,validateCity,onReservedPath,defaultRoom,validateRoom,furnitureSizes} from './city-data.js';
 const $=id=>document.getElementById(id),canvas=$('editorMap'),ctx=canvas.getContext('2d');
 let base;try{base=JSON.parse(localStorage.getItem('mark-city-catalog-v1'));}catch{}
-if(!Array.isArray(base)||!base.length){location.replace('index.html');throw Error('Сначала загрузи город.');}
+if(!Array.isArray(base)||!base.length){location.replace('index.html?openEditor=1'+(new URLSearchParams(location.search).has('room')?'&room='+Number(new URLSearchParams(location.search).get('room')):''));throw Error('Загрузка каталога города для редактора.');}
 if(new URLSearchParams(location.search).has('room')){setupRoomEditor();}else{
 let data=loadCity(),selected=0,mode='select',drag=null,history=[],dirty=false,profileId=0,houseDraft=false,replyDraft=false;
 const roomLink=document.createElement('a');roomLink.textContent='Обустроить выбранный дом';roomLink.id='roomLink';document.querySelector('aside').appendChild(roomLink);roomLink.onclick=e=>{try{persist()}catch(error){e.preventDefault();say(error.message)}};

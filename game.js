@@ -48,6 +48,7 @@ for(let i=0;i<5;i++)building(51+i*4.6,10,3.8,4,3.8,palette[i%6]);
 building(78,8,7,6,5,0xb6a0cf,'БИБЛИОТЕКА',false);building(-65,-5,7,5,5,0xe5b773,'ПЕКАРНЯ');
 const baseCount=baseCatalog.length;for(const b of cityEdits.added)building(b.x,b.z,b.w,b.d,b.h,b.color,b.name,b.roof);
 try{localStorage.setItem('mark-city-catalog-v1',JSON.stringify(baseCatalog.slice(0,baseCount)));}catch{}
+if(new URLSearchParams(location.search).has('openEditor')){const q=new URLSearchParams(location.search);location.replace('editor.html'+(q.has('room')?'?room='+Number(q.get('room')):''));}
 function tree(x,z,scale=1){if((x===8&&z===-3)||(x===5&&z===-11))return;if(mapBuildings.some(b=>Math.hypot(x-b.doorX,z-b.doorZ)<1.5||(Math.abs(x-b.x)<b.w/2+.7&&Math.abs(z-b.z)<b.d/2+.7)))return;cylinder(x,1.6*scale,z,.32*scale,3.2*scale,0x826345);cameraObstacles.push(ball(x,3.9*scale,z,1.6*scale,0x4e9165,scene,.9,1.25,.8));colliders.push({x,z,w:.6*scale,d:.6*scale});}
 for(let i=0;i<17;i++){tree(-51+i*3.7,23,.8);if(i<12)tree(-50+i*5,-11,.85)}
 for(const [x,z] of [[-51,-2],[-48,2],[-31,2],[-23,-4],[-17,1],[-11,-6],[-7,8],[3,-9],[8,-3],[15,4],[17,11],[31,0],[30,9],[53,-10],[59,-10],[65,-10],[70,20],[78,16],[74,25]])tree(x,z);
