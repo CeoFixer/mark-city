@@ -82,6 +82,22 @@ export function buildNeighborhood({town,box,ball,cyl,material,colliders}) {
       cyl(x-5,1,z,.13,2,ink);const stop=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.09,8),material(0xd97970));stop.rotation.x=Math.PI/2;stop.position.set(x-5,2.1,z);town.add(stop);
     }
   }
+  // Side lanes connect the main street to sheltered gardens and a rear walking loop.
+  for(const side of [-1,1]){
+    box(450,.09,side*45,930,.12,4,0xd5bf9c);
+    for(let x=9;x<900;x+=130){
+      box(x,.1,side*29,6,.14,40,0xe3cfaa);
+      cyl(x,.18,side*48,10,.2,0xe5d4b3);
+      cyl(x,.35,side*48,3,.4,0xabbbaf);cyl(x,.57,side*48,2.6,.08,0x8abcc8);
+      for(const a of [-1,1]){
+        box(x+a*6,.85,side*49,3,.22,1,0xb78b68);box(x+a*6,1.4,side*49+.45,3,1,.14,0xc09973);
+        for(const foot of [-1,1])box(x+a*6+foot,.4,side*49,.13,.8,.7,ink);
+        cyl(x+a*7,1.8,side*42,.2,3.6,0x786045);ball(x+a*7,4,side*42,1.8,0x83ac86);
+        cyl(x+a*4,.4,side*54,.9,.8,0xc3947a);ball(x+a*4,1,side*54,1.1,0x71a378);
+        for(let f=0;f<5;f++)ball(x+a*4+Math.cos(f*1.26)*.65,1.55,side*54+Math.sin(f*1.26)*.65,.25,0xeeb09e);
+      }
+    }
+  }
   // Merge the static detail by material so added geometry doesn't add thousands of draw calls.
   town.updateMatrixWorld(true);const batches=new Map(),meshes=[];
   town.traverse(o=>{if(o.isMesh)meshes.push(o);});
