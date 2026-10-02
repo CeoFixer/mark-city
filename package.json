@@ -1,0 +1,1 @@
+{"name":"mark-city","private":true,"type":"module","scripts":{"test":"node --test motion.test.js city-data.test.js","start":"python3 -m http.server 8080 --bind 127.0.0.1"}}
