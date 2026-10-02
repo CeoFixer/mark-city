@@ -1,0 +1,10 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Город Маркуши</title><link rel="stylesheet" href="style.css"></head><body>
+<canvas id="world" aria-label="Трёхмерный город Маркуши"></canvas>
+<header><div class="brand"><span class="sun">✳</span><div><b>Город Маркуши</b><small>Из рисунка — в приключение</small></div></div><div class="header-links"><a href="editor.html">Редактор</a><button id="menuButton" aria-label="Меню: герой и управление" title="Меню · Esc">☰</button></div></header>
+<div id="place" hidden>Первые шаги в своём городе</div>
+<div id="hud"><button id="camera">Камера: со стороны · V</button><button id="home">К началу · R</button></div>
+<div id="hint" hidden>WASD / стрелки — идти · мышь — обзор · Shift — бег · E — действие</div>
+<canvas id="map" width="320" height="120" aria-label="Мини-карта города"></canvas>
+<div id="touch"><button data-key="KeyW">↑</button><div><button data-key="KeyA">←</button><button data-key="KeyS">↓</button><button data-key="KeyD">→</button></div></div>
+<dialog id="welcome"><div class="eyebrow">МИР, КОТОРЫЙ ТЫ НАРИСОВАЛ</div><h1>Прогулка по городу</h1><p>Гуляй по улицам, заходи в дома и знакомься с жителями. У школы, возле воды, можно отдохнуть на лавке.</p><label for="hero">Выбери героя</label><select id="hero"><option value="mark">Маркуша — голубое поло</option><option value="yellow">Житель рисунка — жёлтая футболка</option><option value="pink">Житель рисунка — розовая футболка</option></select><div class="instructions"><p><b>WASD или стрелки</b><br>Ходить по городу · Пробел — прыжок</p><p><b>Потяни мышью / пальцем</b><br>Посмотреть вокруг</p><p><b>V — сменить камеру</b><br>От первого лица или со стороны</p><p><b>Shift — бежать · R — домой</b><br>E — войти / поговорить · Esc — меню</p></div><p class="note">Подойди к двери или жителю и нажми E. Внутри дома можно гулять; выход — у синей двери.</p><button class="primary" id="play">Пойдём гулять →</button></dialog>
+<div id="error" hidden></div><script type="module" src="game.js"></script></body></html>
