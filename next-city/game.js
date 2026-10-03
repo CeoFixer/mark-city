@@ -1,15 +1,15 @@
-import {drawCityMap} from './minimap.js?v=single-storey-6';
-import {createDiscoMusic} from './disco.js?v=single-storey-6';
+import {drawCityMap} from './minimap.js?v=park-7';
+import {createDiscoMusic} from './disco.js?v=park-7';
 import {roads,walks,pavement,crossings,onRoad as isRoad,onWalkway,parkTrees,destinations,buildingSpecs,roofOverhang} from './layout.js?v=single-storey-6';
 import {swingPosts,swingSeats,playPosts,playDeck,playSteps,hoopPost,yardFences,playgroundSolids,schoolTrees,touchesObstacle} from './playground.js?v=single-storey-6';
-import {facade,sideWindows} from './facades.js?v=single-storey-6';
+import {facade,sideWindows} from './facades.js?v=park-7';
 import * as THREE from '../vendor/three.module.js';
 import {sample,trafficRoutes,walkingRoutes,gait,surfaceHeight,verticalStep,riverSegments,shouldSwim,createWalkNavigation} from './motion.js?v=single-storey-6';
 import {loadCity,loadGarage,saveGarage,buyCar,carOffers,defaultRoom,furnitureSizes} from './city-data.js?v=single-storey-6';
 import {replyLine} from './dialogues.js?v=single-storey-6';
 const cityEdits=loadCity(),baseCatalog=[];
 const $=id=>document.getElementById(id), canvas=$('world');
-const discoMusic=createDiscoMusic($('hud'));
+const discoMusic=createDiscoMusic($('welcome'));
 let renderer;
 try { renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'low-power'}); }
 catch(e){$('error').hidden=false;$('error').textContent='Не удалось включить 3D. Открой игру в Safari или Chrome с включённым WebGL.';throw e;}
@@ -27,7 +27,7 @@ function blueDoor(x,z,w,h,parent=scene){const door=box(x,h/2,z,w,h,.045,0x64b6df
 function ball(x,y,z,r,color,parent=scene,sx=1,sy=1,sz=1){const m=new THREE.Mesh(sphereGeo,mat(color));m.position.set(x,y,z);m.scale.set(r*sx,r*sy,r*sz);parent.add(m);return m;}
 function cylinder(x,y,z,r,h,color,vertices=8,parent=scene){let m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,vertices),mat(color));m.position.set(x,y,z);parent.add(m);return m;}
 function label(text,x,y,z,width=6,facing=1,parent=scene,height){
- const signHeight=height??(/Тиурба/.test(text)?3.1:text==='ФИЛД ПАРК'?2.2:Math.min(2.1,width/4));const c=document.createElement('canvas');c.width=/Тиурба/.test(text)?512:1024;c.height=/Тиурба/.test(text)?384:256;const ctx=c.getContext('2d');
+ const signHeight=height??(/Тиурба/.test(text)?3.1:Math.min(2.1,width/4));const c=document.createElement('canvas');c.width=/Тиурба/.test(text)?512:1024;c.height=/Тиурба/.test(text)?384:256;const ctx=c.getContext('2d');
  const food=/ФУД МАРТ/.test(text),disco=/ДИСКОТЕКА/.test(text),mega=/МЕГАЗИН/.test(text),school=/Тиурба/.test(text);
  ctx.fillStyle=mega?'#eacc4d':food?'#e9e0da':disco?'#d5c6b6':school?'#e9c353':/VIOLET/.test(text)?'#d796bf':'#fff1c8';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#635441';ctx.lineWidth=8;ctx.strokeRect(4,4,c.width-8,c.height-8);
  ctx.fillStyle='#3e382e';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='52px "Comic Sans MS",cursive';
@@ -57,18 +57,17 @@ for(const win of face.windows){box(x+win.x,win.y,front,win.w+.16,win.h+.16,.09,0
 for(const side of [-1,1])for(const win of sideWindows(d,h,name)){const wall=x+side*(w/2+.05);box(wall,win.y,z+win.z,.09,win.h+.16,win.w+.16,0x716c59);box(wall+side*.075,win.y,z+win.z,.055,win.h,win.w,0x5b9cbe);}
 if(face.bookDisplays)for(const dx of [-w*.32,w*.32]){box(x+dx,.9,front,2,1.4,.12,0xd5a850);box(x+dx,1.1,front+facing*.1,.65,.6,.05,0xf1e4ab);}
 if(roof){const half=w/2+roofOverhang,outline=new THREE.Shape();outline.moveTo(-half,0);outline.lineTo(half,0);outline.lineTo(0,2.2);outline.closePath();const r=new THREE.Mesh(new THREE.ExtrudeGeometry(outline,{depth:d+roofOverhang*2,bevelEnabled:false,steps:1}),mat(color));r.position.set(x,h-.03,z-d/2-roofOverhang);scene.add(r);}
-if(name){if(!/^Дом №/.test(name))label(name,x,/Тиурба/.test(name)?h-2:h-1.1,front+facing*.17,face.signW,facing);landmarks.push({x,z,name})}}
+if(name){if(!/^Дом №/.test(name))label(name,x,/Тиурба/.test(name)?h-2:h-1.1,front+facing*.17,face.signW,facing,scene,face.signH);landmarks.push({x,z,name})}}
 // Buildings follow the photograph from left to right, north row then south row.
 for(const spec of buildingSpecs)building(...spec);
 const baseCount=baseCatalog.length;
 function tree(x,z,scale=1){if(mapBuildings.some(b=>Math.hypot(x-b.doorX,z-b.doorZ)<1.5||(Math.abs(x-b.x)<b.w/2+.7&&Math.abs(z-b.z)<b.d/2+.7)))return;cylinder(x,1.6*scale,z,.32*scale,3.2*scale,0x826345);cameraObstacles.push(ball(x,3.9*scale,z,1.6*scale,0x4e9165,scene,.9,1.25,.8));colliders.push({x,z,w:.6*scale,d:.6*scale});}
 for(const [x,z] of [[-57,-27],[-28,-26],[1,-25],[17,-27],[50,-28],[73,-28]])tree(x,z,1.15);
 box(24,.015,22,30,.025,16,0x88b968);for(const [i,[x,z]] of parkTrees.entries())tree(x,z,.9+(i%3)*.13);
-label('ФИЛД ПАРК',30,2.6,17.1,9,-1);for(const x of [26.4,33.6]){box(x,1.3,17.3,.26,2.6,.26,0x876746);colliders.push({x,z:17.3,w:.3,d:.3});}
-// Park bench and small snack kiosk.
+label('ФИЛД ПАРК',30,2.1,17.1,6,-1);for(const x of [27.6,32.4]){box(x,1.05,17.3,.26,2.1,.26,0x876746);colliders.push({x,z:17.3,w:.3,d:.3});}
+// Park bench.
 box(20,.6,21,3,.2,.7,0xb58b57);box(20,1.1,21.3,3,.8,.12,0xb58b57);for(const x of [19,21])box(x,.3,21,.13,.6,.6,0x566c59);
 colliders.push({x:20,z:21,w:3,d:.8});
-box(31,1.2,28,3,2.4,2,0xda9680);label('СНЕКИ',31,2.1,26.9,2.8,-1);
 // School playground from the right-hand page.
 box(61.5,.075,14.475,4,.08,.95,0xd6aa75);box(75.75,.015,21.5,16.5,.025,13,0x91b968);
 for(const p of swingPosts)cylinder(p.x,p.y,p.z,p.w/2,p.h,0x7595b8);box(74,3,23,6,.24,.2,0x7595b8);
@@ -84,8 +83,8 @@ function fence(x1,z1,x2,z2){const length=Math.hypot(x2-x1,z2-z1),horizontal=z1==
 for(const segment of yardFences)fence(...segment);
 for(const p of schoolTrees)tree(p.x,p.z,p.scale);
 // The full school name sits beside its entrance, separate from the play area.
-label('Тиурба · Элементарная школа',56.6,2.6,14.4,3.6,-1,scene,2.1);
-for(const x of [55.6,57.6]){box(x,1.25,14.55,.22,2.5,.22,0xdab74f);colliders.push({x,z:14.55,w:.25,d:.25});}
+label('Тиурба · Элементарная школа',56.6,2.25,14.4,2.7,-1,scene,1.55);
+for(const x of [55.8,57.4]){box(x,1.1,14.55,.22,2.2,.22,0xdab74f);colliders.push({x,z:14.55,w:.25,d:.25});}
 function car(x,z,color,rot=0){const g=new THREE.Group();g.scale.set(1.3,1.2,1.3);g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);box(0,.72,0,3.1,.9,1.6,color,g);box(-.25,1.4,0,1.65,.8,1.45,color,g);box(-.25,1.48,.74,1.25,.46,.05,0x8cc4df,g);box(-.25,1.48,-.74,1.25,.46,.05,0x8cc4df,g);for(let x of [-1,1])for(let z of [-.82,.82])ball(x,.4,z,.38,0x354047,g);return g;}
 function person(type='mark'){const g=new THREE.Group(),skin=(type==='mark'||type==='egor')?0xe3b786:0xf2d957,shirt=type==='egor'?0x303435:type==='mark'?0x99b8c8:type==='pink'?0xdd87b4:0xe8c650;const torso=box(0,1.2,0,.65,.8,.4,shirt,g);ball(0,1.98,0,.43,skin,g,1,1.1,.9);for(let x of [-.44,.44])ball(x,1.96,0,.1,skin,g);if(type==='mark'||type==='egor'){ball(0,2.24,-.035,.43,(type==='egor'?0x322a27:0x866344),g,1,.55,.9);for(let x of [-.22,0,.22])box(x,2.23,.28,.21,.2,.14,(type==='egor'?0x322a27:0x866344),g);if(type==='mark'){box(0,1.52,.23,.56,.08,.08,0x417ab1,g);for(const x of [-.12,.12]){const collar=box(x,1.52,.24,.19,.16,.06,0xb2cbd7,g);collar.rotation.z=x<0?-.4:.4;}for(const y of [1.3,1.4])ball(0,y,.23,.022,0xe8eef0,g);}}for(let x of [-.15,.15]){ball(x,2.02,.36,.1,0xfff8ee,g,1,1,.4);ball(x,2.02,.402,.047,(type==='mark'||type==='egor'?0x68452f:0x367eae),g,1,1,.4);if(type==='mark')for(let j=0;j<3;j++)ball(x+(j-1)*.055,1.86-(j%2)*.04,.365,.017,0xad693e,g);}if(type==='egor'){for(const x of [-.38,.38])box(x,1.97,-.08,.18,.75,.45,0x322a27,g);box(0,1.98,-.3,.65,.7,.2,0x322a27,g);box(0,1.73,.3,.36,.17,.08,0x755e4a,g);}box(0,1.78,.36,.17,.035,.03,0x754e39,g);let limbs=[];for(let s of [-1,1]){let leg=new THREE.Group();leg.position.set(s*.19,.83,0);g.add(leg);box(0,-.2,0,.24,.4,.27,0x496a8d,leg);const knee=new THREE.Group();knee.position.y=-.4;leg.add(knee);leg.userData.knee=knee;box(0,-.2,0,.24,.4,.27,0x496a8d,knee);box(0,-.35,.08,.28,.17,.45,0x5b584e,knee);limbs.push(leg);let arm=new THREE.Group();arm.position.set(s*.48,1.49,0);g.add(arm);box(0,-.35,0,.19,.7,.22,skin,arm);limbs.push(arm);}g.userData.limbs=limbs;return g;}
 // Combine static geometry by material to keep the draw-call count low.
