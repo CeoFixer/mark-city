@@ -1,4 +1,4 @@
-import {canWalk,onWalkway} from './layout.js?v=drawing-3';
+import {canWalk,onWalkway} from './layout.js?v=school-5';
 // Distances are world units. Closed routes keep movement continuous at the seam.
 export function route(points) {
   const segments=points.map((a,i)=>{const b=points[(i+1)%points.length],dx=b[0]-a[0],dz=b[1]-a[1];return {x:a[0],z:a[1],dx,dz,length:Math.hypot(dx,dz)}});
