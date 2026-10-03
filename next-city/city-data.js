@@ -1,4 +1,4 @@
-import {residentProfiles} from './dialogues.js?v=school-5';
+import {residentProfiles} from './dialogues.js?v=single-storey-6';
 export const STORAGE_KEY='mark-next-city-edits-v1';
 export const emptyCity=()=>({version:1,graffiti:null,rooms:{},overrides:{},added:[],trees:[],profiles:residentProfiles.map(p=>({...p})),replies:{hello:'Привет! Хорошего тебе дня и приятной прогулки!',place:'Возле школы, у воды, есть деревья и лавка. В любой дом можно войти у двери.'}});
 export function validateCity(data){

@@ -1,7 +1,7 @@
 import {emptyCity,loadCity,saveCity,validateCity,onReservedPath,defaultRoom,validateRoom,furnitureSizes} from './city-data.js';
 const $=id=>document.getElementById(id),canvas=$('editorMap'),ctx=canvas.getContext('2d');
 let base;try{base=JSON.parse(localStorage.getItem('mark-city-catalog-v1'));}catch{}
-if(!Array.isArray(base)||!base.length){location.replace('index.html?openEditor=1'+(new URLSearchParams(location.search).has('room')?'&room='+Number(new URLSearchParams(location.search).get('room')):''));throw Error('Загрузка каталога города для редактора.');}
+if(!Array.isArray(base)||!base.length){location.replace('original-city.html?openEditor=1'+(new URLSearchParams(location.search).has('room')?'&room='+Number(new URLSearchParams(location.search).get('room')):''));throw Error('Загрузка каталога города для редактора.');}
 if(new URLSearchParams(location.search).has('room')){setupRoomEditor();}else{
 let data=loadCity(),selected=0,mode='select',drag=null,history=[],dirty=false,profileId=0,houseDraft=false,replyDraft=false;
 const roomLink=document.createElement('a');roomLink.textContent='Обустроить выбранный дом';roomLink.id='roomLink';document.querySelector('aside').appendChild(roomLink);roomLink.onclick=e=>{try{persist()}catch(error){e.preventDefault();say(error.message)}};
@@ -49,7 +49,7 @@ function setupRoomEditor(){
  if(!building){location.replace('editor.html');return;}
  const original=()=>({...defaultRoom(),wall:building.color});let room=structuredClone(data.rooms[id]||original()),selected=0,history=[],dirty=false,draft=false;
  document.querySelector('h1').textContent='Обустроить: '+building.name;
- $('playCity').href=`index.html?home=${id}`;$('playCity').textContent='Сохранить и войти →';
+ $('playCity').href=`original-city.html?home=${id}`;$('playCity').textContent='Сохранить и войти →';
  document.querySelector('main').innerHTML=`<section class="map-panel"><p>Комната сверху. Выбери мебель справа и нажми на свободное место, чтобы передвинуть её. Снизу — выход; проход к нему всегда остаётся свободным.</p><canvas id="roomMap" width="640" height="640" aria-label="План комнаты"></canvas><p id="status" role="status">Цвета и мебель сохраняются вместе с городом.</p><div class="tools"><button id="roomUndo">Отменить</button><button id="roomSave">Сохранить</button><button id="roomReset">Исходная комната</button><a href="editor.html">Весь город</a></div><dialog id="roomResetDialog"><p>Вернуть исходные цвета и мебель только этой комнаты?</p><button id="roomResetCancel">Отмена</button><button id="roomResetYes">Вернуть исходные</button></dialog></section><aside><label>Стены<input id="wallColor" type="color"></label><label>Пол<input id="floorColor" type="color"></label><h2>Мебель</h2><label>Предмет<select id="furnitureList"></select></label><label>X<input id="fx" type="number" step=".5"></label><label>Z<input id="fz" type="number" step=".5"></label><label>Цвет мебели<input id="fcolor" type="color"></label><button id="moveFurniture">Применить</button><label>Добавить<select id="furnitureType"><option value="sofa">Диван</option><option value="table">Стол</option><option value="cabinet">Шкаф</option></select></label><button id="addFurniture">＋ Предмет</button><button id="removeFurniture">Убрать выбранный</button></aside>`;
  const names={sofa:'Диван',table:'Стол',cabinet:'Шкаф'},canvas=$('roomMap'),ctx=canvas.getContext('2d'),hex=n=>'#'+n.toString(16).padStart(6,'0'),say=text=>$('status').textContent=text;
  const remember=()=>{history.push(structuredClone(room));if(history.length>30)history.shift();dirty=true;};

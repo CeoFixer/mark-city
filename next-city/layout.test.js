@@ -19,7 +19,7 @@ test('walls and roof eaves leave visible setbacks from streets, sidewalks and ne
  const buildings=buildingSpecs.map(([x,z,w,d,h,c,name,roof=true])=>({x,z,w:w+(roof?roofOverhang*2:0),d:d+(roof?roofOverhang*2:0),name}));
  for(const [i,b] of buildings.entries()){
   for(const p of [...roads,...walks])assert.ok(gap(b,p)>=.7,`${b.name} touches pavement: ${gap(b,p)}`);
-  for(const other of buildings.slice(i+1))assert.ok(gap(b,other)>=.7,`${b.name} / ${other.name}`);
+  for(const other of buildings.slice(i+1)){const sameMotel=b.name.startsWith('VIOLET')&&other.name.startsWith('VIOLET');assert.ok(sameMotel?Math.abs(gap(b,other))<.001:gap(b,other)>=.7,`${b.name} / ${other.name}`);}
  }
 });
 test('playground solids stop a walking player approaching from every side',()=>{
@@ -30,7 +30,7 @@ test('playground solids stop a walking player approaching from every side',()=>{
  }
 });
 test('schoolyard gate and open space between swings remain walkable',()=>{
- const route=[[75,29],[75,24.2],[74,24.2],[74,19],[78.5,19],[78.5,25],[75,25],[75,29]];
+ const route=[[78,13.8],[78,20],[74,20],[74,24.2],[78.5,24.2],[78.5,19],[78,19],[78,13.8]];
  for(let i=1;i<route.length;i++){const [x,z]=route[i-1],[tx,tz]=route[i],length=Math.hypot(tx-x,tz-z);for(let d=0;d<=length;d+=.05)assert.ok(!touchesObstacle(x+(tx-x)*d/length,z+(tz-z)*d/length,playgroundColliders),`blocked passage ${i}`);}
  for(const [x,z] of [[68,15],[84,20],[70,27.7],[80,27.7]])assert.ok(touchesObstacle(x,z,playgroundColliders),'solid fence');
 });

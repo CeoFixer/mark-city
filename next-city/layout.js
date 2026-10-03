@@ -13,14 +13,14 @@ export const destinations=[{x:-77,z:11},{x:-45,z:11},{x:-25,z:11},{x:-4,z:11},{x
 export const roofOverhang=.3;
 export const buildingSpecs=[
  ...[[-78,28,0x5cadd0,9],[-66,30,0xefb260,9],[-55.9,32,0xc49b78,8.5],[-46.5,34,0xf0d750,7.5]].map(([x,n,c,w])=>[x,-22.25,w,12,6,c,'Дом №'+n]),
- [-21.5,-22,8,12,5,0xd391b6,'VIOLET · ЛОББИ',false],
+ [-20.75,-22,9.5,12,5,0xd391b6,'VIOLET · ЛОББИ',false],
  [-8.5,-22,15,12,9,0xd796bf,'VIOLET МОТЕЛЬ',false],
  ...[[10,38,0x91bb83],[22,40,0xeaa2a5],[33,42,0xf0d85e],[43,44,0xb295c8],[56,46,0xdbd78e],[67,48,0xd4b399],[78,50,0xf0e9db]].map(([x,n,c])=>[x,-22.25,8,12,6,c,'Дом №'+n]),
- [-67,21,26,12,7,0xf0cc4f,'МЕГАЗИН',false],
- [-47.5,21,9,12,7,0xe4dbd0,'ФУД МАРТ',false],
- [-19,21,12,12,6,0xcab9a3,'ДИСКОТЕКА',false],
- [-5.5,21,9,12,6,0xecd547,'ФИЛД ПАРК · Книги',false],
- [61.5,20.5,12,11,7,0xe9c353,'Тиурба · Элементарная школа',false]
+ [-67,21,26,12,6,0xf0cc4f,'МЕГАЗИН',false,-1],
+ [-47.5,21,9,12,6,0xe4dbd0,'ФУД МАРТ',false,-1],
+ [-19,21,12,12,6,0xcab9a3,'ДИСКОТЕКА',false,-1],
+ [-5.5,21,9,12,6,0xecd547,'ФИЛД ПАРК · Книги',false,-1],
+ [61.5,20.5,12,11,7,0xe9c353,'Тиурба · Элементарная школа',false,-1]
 ];
 // Cut pavement around asphalt so sidewalk meshes never cover a junction.
 function subtract(a,b){const x1=Math.max(a.x-a.w/2,b.x-b.w/2),x2=Math.min(a.x+a.w/2,b.x+b.w/2),z1=Math.max(a.z-a.d/2,b.z-b.d/2),z2=Math.min(a.z+a.d/2,b.z+b.d/2);if(x1>=x2||z1>=z2)return [a];const out=[];const add=(l,r,t,u)=>{if(r>l&&u>t)out.push({x:(l+r)/2,z:(t+u)/2,w:r-l,d:u-t});};add(a.x-a.w/2,x1,a.z-a.d/2,a.z+a.d/2);add(x2,a.x+a.w/2,a.z-a.d/2,a.z+a.d/2);add(x1,x2,a.z-a.d/2,z1);add(x1,x2,z2,a.z+a.d/2);return out;}

@@ -1,11 +1,12 @@
-import {createDiscoMusic} from './disco.js?v=school-5';
-import {roads,walks,pavement,crossings,onRoad as isRoad,onWalkway,parkTrees,destinations,buildingSpecs,roofOverhang} from './layout.js?v=school-5';
-import {swingPosts,swingSeats,playPosts,playDeck,playSteps,hoopPost,yardFences,playgroundSolids,touchesObstacle} from './playground.js?v=school-5';
-import {facade,sideWindows} from './facades.js?v=school-5';
+import {drawCityMap} from './minimap.js?v=single-storey-6';
+import {createDiscoMusic} from './disco.js?v=single-storey-6';
+import {roads,walks,pavement,crossings,onRoad as isRoad,onWalkway,parkTrees,destinations,buildingSpecs,roofOverhang} from './layout.js?v=single-storey-6';
+import {swingPosts,swingSeats,playPosts,playDeck,playSteps,hoopPost,yardFences,playgroundSolids,schoolTrees,touchesObstacle} from './playground.js?v=single-storey-6';
+import {facade,sideWindows} from './facades.js?v=single-storey-6';
 import * as THREE from '../vendor/three.module.js';
-import {sample,trafficRoutes,walkingRoutes,gait,surfaceHeight,verticalStep,riverSegments,shouldSwim,createWalkNavigation} from './motion.js?v=school-5';
-import {loadCity,loadGarage,saveGarage,buyCar,carOffers,defaultRoom,furnitureSizes} from './city-data.js?v=school-5';
-import {replyLine} from './dialogues.js?v=school-5';
+import {sample,trafficRoutes,walkingRoutes,gait,surfaceHeight,verticalStep,riverSegments,shouldSwim,createWalkNavigation} from './motion.js?v=single-storey-6';
+import {loadCity,loadGarage,saveGarage,buyCar,carOffers,defaultRoom,furnitureSizes} from './city-data.js?v=single-storey-6';
+import {replyLine} from './dialogues.js?v=single-storey-6';
 const cityEdits=loadCity(),baseCatalog=[];
 const $=id=>document.getElementById(id), canvas=$('world');
 const discoMusic=createDiscoMusic($('hud'));
@@ -25,8 +26,8 @@ const doorMaterial=new THREE.MeshBasicMaterial({color:0x64b6df});
 function blueDoor(x,z,w,h,parent=scene){const door=box(x,h/2,z,w,h,.045,0x64b6df,parent);door.material=doorMaterial;return door;}
 function ball(x,y,z,r,color,parent=scene,sx=1,sy=1,sz=1){const m=new THREE.Mesh(sphereGeo,mat(color));m.position.set(x,y,z);m.scale.set(r*sx,r*sy,r*sz);parent.add(m);return m;}
 function cylinder(x,y,z,r,h,color,vertices=8,parent=scene){let m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,vertices),mat(color));m.position.set(x,y,z);parent.add(m);return m;}
-function label(text,x,y,z,width=6,facing=1,parent=scene){
- const signHeight=/Тиурба/.test(text)?3.1:text==='ФИЛД ПАРК'?3:Math.min(2.1,width/4);const c=document.createElement('canvas');c.width=/Тиурба/.test(text)?512:1024;c.height=/Тиурба/.test(text)?384:256;const ctx=c.getContext('2d');
+function label(text,x,y,z,width=6,facing=1,parent=scene,height){
+ const signHeight=height??(/Тиурба/.test(text)?3.1:text==='ФИЛД ПАРК'?2.2:Math.min(2.1,width/4));const c=document.createElement('canvas');c.width=/Тиурба/.test(text)?512:1024;c.height=/Тиурба/.test(text)?384:256;const ctx=c.getContext('2d');
  const food=/ФУД МАРТ/.test(text),disco=/ДИСКОТЕКА/.test(text),mega=/МЕГАЗИН/.test(text),school=/Тиурба/.test(text);
  ctx.fillStyle=mega?'#eacc4d':food?'#e9e0da':disco?'#d5c6b6':school?'#e9c353':/VIOLET/.test(text)?'#d796bf':'#fff1c8';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#635441';ctx.lineWidth=8;ctx.strokeRect(4,4,c.width-8,c.height-8);
  ctx.fillStyle='#3e382e';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='52px "Comic Sans MS",cursive';
@@ -50,10 +51,10 @@ const palette=[0xdeb0c8,0xe7ce64,0x6eb1c2,0xaf8dca,0xe88e7f,0xb0c5a0];
 function building(x,z,w,d,h,color,name='',roof=true,facing=1){const id=mapBuildings.length;baseCatalog.push({x,z,w,d,h,color,name:name||`Дом №${id+1}`,roof});const edit=cityEdits.overrides[id];if(edit)({x,z,w,d,h,color,name,roof}=edit);cameraObstacles.push(box(x,h/2,z,w,h,d,color));colliders.push({x,z,w:w+.6,d:d+.6});const front=z+facing*(d/2+.05);mapBuildings.push({id:mapBuildings.length,x,z,w,d,h,color,roof,name:name||`Дом №${mapBuildings.length+1}`,doorX:x+facade(name,w,h).doorX,doorZ:front+facing*1.05,facing});
 const face=facade(name,w,h),doorHeight=face.doorH??Math.min(h-.35,2.9);
 const door=box(x+face.doorX,doorHeight/2,front,face.doorW,doorHeight,.09,face.doorColor??0x64b6df);
-const pathEdge=z<0?-15:28;if(pathEdge>front)box(x+face.doorX,.073,(front+pathEdge)/2,Math.min(face.doorW,2),.035,pathEdge-front,/МЕГАЗИН|ФУД МАРТ|ДИСКОТЕКА|Книги/.test(name)?0xc5c3ba:0xd6bf96);
-if(face.doorW>2)box(x+face.doorX,doorHeight/2,front+facing*.065,.035,doorHeight,.035,0x5b6057);
+const pathEdge=z<0?-15:facing<0?14:28;if(facing*(pathEdge-front)>0)box(x+face.doorX,.073,(front+pathEdge)/2,Math.min(face.doorW,2),.035,Math.abs(pathEdge-front),/МЕГАЗИН|ФУД МАРТ|ДИСКОТЕКА|Книги/.test(name)?0xc5c3ba:0xd6bf96);
+if(face.doubleDoor??(face.doorW>2))box(x+face.doorX,doorHeight/2,front+facing*.065,.035,doorHeight,.035,0x5b6057);
 for(const win of face.windows){box(x+win.x,win.y,front,win.w+.16,win.h+.16,.09,0x716c59);box(x+win.x,win.y,front+facing*.08,win.w,win.h,.055,0x5b9cbe);}
-for(const side of [-1,1])for(const win of sideWindows(d,h)){const wall=x+side*(w/2+.05);box(wall,win.y,z+win.z,.09,win.h+.16,win.w+.16,0x716c59);box(wall+side*.075,win.y,z+win.z,.055,win.h,win.w,0x5b9cbe);}
+for(const side of [-1,1])for(const win of sideWindows(d,h,name)){const wall=x+side*(w/2+.05);box(wall,win.y,z+win.z,.09,win.h+.16,win.w+.16,0x716c59);box(wall+side*.075,win.y,z+win.z,.055,win.h,win.w,0x5b9cbe);}
 if(face.bookDisplays)for(const dx of [-w*.32,w*.32]){box(x+dx,.9,front,2,1.4,.12,0xd5a850);box(x+dx,1.1,front+facing*.1,.65,.6,.05,0xf1e4ab);}
 if(roof){const half=w/2+roofOverhang,outline=new THREE.Shape();outline.moveTo(-half,0);outline.lineTo(half,0);outline.lineTo(0,2.2);outline.closePath();const r=new THREE.Mesh(new THREE.ExtrudeGeometry(outline,{depth:d+roofOverhang*2,bevelEnabled:false,steps:1}),mat(color));r.position.set(x,h-.03,z-d/2-roofOverhang);scene.add(r);}
 if(name){if(!/^Дом №/.test(name))label(name,x,/Тиурба/.test(name)?h-2:h-1.1,front+facing*.17,face.signW,facing);landmarks.push({x,z,name})}}
@@ -63,17 +64,17 @@ const baseCount=baseCatalog.length;
 function tree(x,z,scale=1){if(mapBuildings.some(b=>Math.hypot(x-b.doorX,z-b.doorZ)<1.5||(Math.abs(x-b.x)<b.w/2+.7&&Math.abs(z-b.z)<b.d/2+.7)))return;cylinder(x,1.6*scale,z,.32*scale,3.2*scale,0x826345);cameraObstacles.push(ball(x,3.9*scale,z,1.6*scale,0x4e9165,scene,.9,1.25,.8));colliders.push({x,z,w:.6*scale,d:.6*scale});}
 for(const [x,z] of [[-57,-27],[-28,-26],[1,-25],[17,-27],[50,-28],[73,-28]])tree(x,z,1.15);
 box(24,.015,22,30,.025,16,0x88b968);for(const [i,[x,z]] of parkTrees.entries())tree(x,z,.9+(i%3)*.13);
-label('ФИЛД ПАРК',30,3,17.1,12,-1);for(const x of [25,35]){box(x,1.5,17.3,.26,3,.26,0x876746);colliders.push({x,z:17.3,w:.3,d:.3});}
+label('ФИЛД ПАРК',30,2.6,17.1,9,-1);for(const x of [26.4,33.6]){box(x,1.3,17.3,.26,2.6,.26,0x876746);colliders.push({x,z:17.3,w:.3,d:.3});}
 // Park bench and small snack kiosk.
 box(20,.6,21,3,.2,.7,0xb58b57);box(20,1.1,21.3,3,.8,.12,0xb58b57);for(const x of [19,21])box(x,.3,21,.13,.6,.6,0x566c59);
 colliders.push({x:20,z:21,w:3,d:.8});
 box(31,1.2,28,3,2.4,2,0xda9680);label('СНЕКИ',31,2.1,26.9,2.8,-1);
 // School playground from the right-hand page.
-box(61.5,.075,28.5,4,.08,5,0xd6aa75);box(75.75,.015,21.5,16.5,.025,13,0x91b968);
+box(61.5,.075,14.475,4,.08,.95,0xd6aa75);box(75.75,.015,21.5,16.5,.025,13,0x91b968);
 for(const p of swingPosts)cylinder(p.x,p.y,p.z,p.w/2,p.h,0x7595b8);box(74,3,23,6,.24,.2,0x7595b8);
 for(const p of swingSeats){for(const side of [-.42,.42])box(p.x+side,1.7,p.z,.055,2.4,.055,0x756953);box(p.x,p.y,p.z,p.w,p.h,p.d,0x444849);}
 const solidBox=(p,color)=>box(p.x,p.y,p.z,p.w,p.h,p.d,color);
-solidBox(playDeck,0xd29d75);for(const p of playPosts)solidBox(p,0x7595b8);for(const p of playSteps)solidBox(p,0xc79a62);const playRoof=new THREE.Mesh(new THREE.ConeGeometry(2.4,2,4),mat(0xdb8e83));playRoof.position.set(playDeck.x,3,playDeck.z);playRoof.rotation.y=Math.PI/4;scene.add(playRoof);
+solidBox(playDeck,0xd29d75);for(const p of playPosts)solidBox(p,0x7595b8);for(const p of playSteps)solidBox(p,0xc79a62);const playRoof=new THREE.Mesh(new THREE.ConeGeometry(2.4,2,4),mat(0xdb8e83));playRoof.position.set(playDeck.x,3.7,playDeck.z);playRoof.rotation.y=Math.PI/4;scene.add(playRoof);
 cylinder(hoopPost.x,hoopPost.y,hoopPost.z,hoopPost.w/2,hoopPost.h,0xc57667);const backboard=new THREE.Mesh(new THREE.CircleGeometry(1.3,24,0,Math.PI),mat(0xf4ead0));backboard.position.set(81,5.9,19.12);scene.add(backboard);box(61.5,7.07,20.5,12.3,.18,11.3,0xd9a068);
 colliders.push(...playgroundSolids);
 const hoop=new THREE.Mesh(new THREE.TorusGeometry(.6,.06,6,16),mat(0xbc7258));hoop.rotation.x=Math.PI/2;hoop.position.set(81,6,19.7);scene.add(hoop);
@@ -81,9 +82,10 @@ const hoop=new THREE.Mesh(new THREE.TorusGeometry(.6,.06,6,16),mat(0xbc7258));ho
 function fence(x1,z1,x2,z2){const length=Math.hypot(x2-x1,z2-z1),horizontal=z1===z2;for(let d=0;d<=length;d+=.8){const t=d/length;box(x1+(x2-x1)*t,.75,z1+(z2-z1)*t,.09,1.5,.09,0x5b8277);}for(const y of [.35,1.25])box((x1+x2)/2,y,(z1+z2)/2,horizontal?length:.1,.1,horizontal?.1:length,0x5b8277);colliders.push({x:(x1+x2)/2,z:(z1+z2)/2,w:horizontal?length:.15,d:horizontal?.15:length});}
 // Both ends of the enclosure meet the school's east wall; keep the gate open.
 for(const segment of yardFences)fence(...segment);
+for(const p of schoolTrees)tree(p.x,p.z,p.scale);
 // The full school name sits beside its entrance, separate from the play area.
-label('Тиурба · Элементарная школа',56.6,3.1,27.2,5.2,1);
-for(const x of [55.4,57.8]){box(x,1.5,27.05,.22,3,.22,0xdab74f);colliders.push({x,z:27.05,w:.25,d:.25});}
+label('Тиурба · Элементарная школа',56.6,2.6,14.4,3.6,-1,scene,2.1);
+for(const x of [55.6,57.6]){box(x,1.25,14.55,.22,2.5,.22,0xdab74f);colliders.push({x,z:14.55,w:.25,d:.25});}
 function car(x,z,color,rot=0){const g=new THREE.Group();g.scale.set(1.3,1.2,1.3);g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);box(0,.72,0,3.1,.9,1.6,color,g);box(-.25,1.4,0,1.65,.8,1.45,color,g);box(-.25,1.48,.74,1.25,.46,.05,0x8cc4df,g);box(-.25,1.48,-.74,1.25,.46,.05,0x8cc4df,g);for(let x of [-1,1])for(let z of [-.82,.82])ball(x,.4,z,.38,0x354047,g);return g;}
 function person(type='mark'){const g=new THREE.Group(),skin=(type==='mark'||type==='egor')?0xe3b786:0xf2d957,shirt=type==='egor'?0x303435:type==='mark'?0x99b8c8:type==='pink'?0xdd87b4:0xe8c650;const torso=box(0,1.2,0,.65,.8,.4,shirt,g);ball(0,1.98,0,.43,skin,g,1,1.1,.9);for(let x of [-.44,.44])ball(x,1.96,0,.1,skin,g);if(type==='mark'||type==='egor'){ball(0,2.24,-.035,.43,(type==='egor'?0x322a27:0x866344),g,1,.55,.9);for(let x of [-.22,0,.22])box(x,2.23,.28,.21,.2,.14,(type==='egor'?0x322a27:0x866344),g);if(type==='mark'){box(0,1.52,.23,.56,.08,.08,0x417ab1,g);for(const x of [-.12,.12]){const collar=box(x,1.52,.24,.19,.16,.06,0xb2cbd7,g);collar.rotation.z=x<0?-.4:.4;}for(const y of [1.3,1.4])ball(0,y,.23,.022,0xe8eef0,g);}}for(let x of [-.15,.15]){ball(x,2.02,.36,.1,0xfff8ee,g,1,1,.4);ball(x,2.02,.402,.047,(type==='mark'||type==='egor'?0x68452f:0x367eae),g,1,1,.4);if(type==='mark')for(let j=0;j<3;j++)ball(x+(j-1)*.055,1.86-(j%2)*.04,.365,.017,0xad693e,g);}if(type==='egor'){for(const x of [-.38,.38])box(x,1.97,-.08,.18,.75,.45,0x322a27,g);box(0,1.98,-.3,.65,.7,.2,0x322a27,g);box(0,1.73,.3,.36,.17,.08,0x755e4a,g);}box(0,1.78,.36,.17,.035,.03,0x754e39,g);let limbs=[];for(let s of [-1,1]){let leg=new THREE.Group();leg.position.set(s*.19,.83,0);g.add(leg);box(0,-.2,0,.24,.4,.27,0x496a8d,leg);const knee=new THREE.Group();knee.position.y=-.4;leg.add(knee);leg.userData.knee=knee;box(0,-.2,0,.24,.4,.27,0x496a8d,knee);box(0,-.35,.08,.28,.17,.45,0x5b584e,knee);limbs.push(leg);let arm=new THREE.Group();arm.position.set(s*.48,1.49,0);g.add(arm);box(0,-.35,0,.19,.7,.22,skin,arm);limbs.push(arm);}g.userData.limbs=limbs;return g;}
 // Combine static geometry by material to keep the draw-call count low.
@@ -151,7 +153,7 @@ const exitDoorSeam=box(0,1.45,7.8,.035,2.9,.035,0x5b6057,room);
 for(let x of [-3.5,3.5])box(x,2.2,-7.87,1.8,1.5,.06,0x94cbd7,room);
 function furnish(x,z,w,h,d,color){const mesh=box(x,h/2,z,w,h,d,color,room);roomFurniture.push(mesh);roomColliders.push({x,z,w,d});return mesh;}
 function buildInterior(building){
-  const entry=facade(building.name,building.w,building.h),entryHeight=entry.doorH??Math.min(building.h-.35,2.9);exitDoor.scale.set(entry.doorW,entryHeight,.09);exitDoor.position.y=entryHeight/2;exitDoor.material=mat(entry.doorColor??0x64b6df);exitDoorSeam.visible=entry.doorW>2;exitDoorSeam.scale.y=entryHeight;exitDoorSeam.position.y=entryHeight/2;
+  const entry=facade(building.name,building.w,building.h),entryHeight=entry.doorH??Math.min(building.h-.35,2.9);exitDoor.scale.set(entry.doorW,entryHeight,.09);exitDoor.position.y=entryHeight/2;exitDoor.material=mat(entry.doorColor??0x64b6df);exitDoorSeam.visible=entry.doubleDoor??(entry.doorW>2);exitDoorSeam.scale.y=entryHeight;exitDoorSeam.position.y=entryHeight/2;
   for(const mesh of roomFurniture)room.remove(mesh);roomFurniture.length=0;roomColliders.length=0;classPeople.length=0;
   const renovation=cityEdits.rooms[building.id];roomWalls.forEach(w=>{if(w!==exitDoor)w.material=mat(renovation?.wall??building.color)});roomFloor.material=mat(renovation?.floor??0xd6bf8f);
   if(renovation){for(const f of renovation.furniture){const size=furnitureSizes[f.type];furnish(f.x,f.z,size.w,size.h,size.d,f.color);if(f.type==='sofa')furnish(f.x,f.z-.9,size.w,1.2,.3,f.color);}}
@@ -204,7 +206,7 @@ function updateInteractions(){
   if(actionButton.textContent!==text)actionButton.textContent=text;
 }
 function valid(x,z){if(inside){const rx=x-1000,rz=z-1000;return Math.abs(rx)<7.4&&Math.abs(rz)<7.4&&!touchesObstacle(rx,rz,roomColliders);}return Math.abs(x)<86&&Math.abs(z)<30&&!touchesObstacle(x,z,colliders)}
-const mini=$('map').getContext('2d');function miniMap(){mini.fillStyle='#9fbd7b';mini.fillRect(0,0,320,120);mini.fillStyle='#c5c3ba';for(const r of pavement)mini.fillRect((r.x-r.w/2+90)*1.777,(r.z-r.d/2+32)*1.875,r.w*1.777,r.d*1.875);mini.fillStyle='#aaa9a0';for(const r of roads)mini.fillRect((r.x-r.w/2+90)*1.777,(r.z-r.d/2+32)*1.875,r.w*1.777,r.d*1.875);for(let b of mapBuildings){mini.fillStyle='#'+b.color.toString(16).padStart(6,'0');mini.fillRect((b.x-b.w/2+90)*1.777,(b.z-b.d/2+32)*1.875,b.w*1.777,b.d*1.875)}mini.fillStyle='#fff';mini.beginPath();mini.arc((player.x+90)*1.777,(player.z+32)*1.875,5,0,7);mini.fill();mini.fillStyle='#284d49';mini.beginPath();mini.arc((player.x+90)*1.777,(player.z+32)*1.875,3,0,7);mini.fill();}
+const mini=$('map').getContext('2d');function miniMap(){drawCityMap(mini,mapBuildings,player,yaw);}
 let garage=loadGarage(),ownedCar=null,driving=false;
 const garageDialog=document.createElement('dialog');garageDialog.id='garage';document.body.appendChild(garageDialog);
 const garageButton=document.createElement('button');garageButton.id='garageButton';garageButton.textContent='Выбрать машину';garageButton.hidden=true;$('hud').appendChild(garageButton);
@@ -221,7 +223,7 @@ function carPositionValid(x,z,angle){const dx=-Math.sin(angle),dz=-Math.cos(angl
 function drive(dt){const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),turn=(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)-(keys.has('KeyD')||keys.has('ArrowRight')?1:0);const nextYaw=yaw+turn*dt*1.35*(forward<0?-1:1);if(carPositionValid(player.x,player.z,nextYaw))yaw=nextYaw;const speed=forward*(forward<0?3.2:7)*dt,x=player.x-Math.sin(yaw)*speed,z=player.z-Math.cos(yaw)*speed;if(carPositionValid(x,z,yaw))player.set(x,0,z);ownedCar.position.copy(player);ownedCar.rotation.y=Math.atan2(Math.cos(yaw),-Math.sin(yaw));}
 const diagnostics=new URLSearchParams(location.search).has('inspect')?document.body.appendChild(document.createElement('output')):null;if(diagnostics){diagnostics.id='cityDiagnostics';diagnostics.hidden=true;}
 // Explicit local test controls; absent from the normal game URL.
-if(diagnostics){const test=document.createElement('details');test.id='testControls';test.innerHTML='<summary>Проверка игры</summary>';const select=document.createElement('select');select.id='testBuilding';select.setAttribute('aria-label','Проверочный вход');mapBuildings.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;select.appendChild(o)});const next=document.createElement('button');next.textContent='К выбранному входу';next.onclick=()=>{if(inside)exitBuilding();const b=mapBuildings[Number(select.value)];inspectionDistance=0;player.set(b.doorX,0,b.doorZ);yaw=b.facing===1?0:Math.PI;pitch=-.15;};const npc=document.createElement('button');npc.textContent='К гуляющему жителю';npc.onclick=()=>{if(inside)exitBuilding();const p=pedestrians[0].root.position;player.set(p.x-1,0,p.z);};const park=document.createElement('button');park.textContent='К парку';park.onclick=()=>{if(inside)exitBuilding();player.set(10,0,11);yaw=Math.PI;pitch=.1;};const overview=document.createElement('button');overview.textContent='Осмотреть фасад';overview.onclick=()=>{if(inside)exitBuilding();const b=mapBuildings[Number(select.value)];player.set(b.x,0,b.z<0?-10.5:29.3);inspectionDistance=b.z<0?10:20;first=false;yaw=0;pitch=.35;};test.append(select,next,npc,park,overview);document.body.appendChild(test);}
+if(diagnostics){const test=document.createElement('details');test.id='testControls';test.innerHTML='<summary>Проверка игры</summary>';const select=document.createElement('select');select.id='testBuilding';select.setAttribute('aria-label','Проверочный вход');mapBuildings.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=b.name;select.appendChild(o)});const next=document.createElement('button');next.textContent='К выбранному входу';next.onclick=()=>{if(inside)exitBuilding();const b=mapBuildings[Number(select.value)];inspectionDistance=0;player.set(b.doorX,0,b.doorZ);yaw=b.facing===1?0:Math.PI;pitch=-.15;};const npc=document.createElement('button');npc.textContent='К гуляющему жителю';npc.onclick=()=>{if(inside)exitBuilding();const p=pedestrians[0].root.position;player.set(p.x-1,0,p.z);};const park=document.createElement('button');park.textContent='К парку';park.onclick=()=>{if(inside)exitBuilding();player.set(10,0,11);yaw=Math.PI;pitch=.1;};const overview=document.createElement('button');overview.textContent='Осмотреть фасад';overview.onclick=()=>{if(inside)exitBuilding();const b=mapBuildings[Number(select.value)];player.set(b.x,0,b.z<0?-10.5:8);inspectionDistance=10;first=false;yaw=b.facing===1?0:Math.PI;pitch=.35;};test.append(select,next,npc,park,overview);document.body.appendChild(test);}
 const clock=new THREE.Clock(),ray=new THREE.Raycaster(),target=new THREE.Vector3();let frame=0;
 function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.05),moving=false;if(!inside)updateCity(dt);else classPeople.forEach((p,i)=>{p.userData.limbs[1].rotation.x=-.5+Math.sin(clock.elapsedTime*1.5+i)*.08;p.userData.limbs[3].rotation.x=-.5;});if(active&&driving)drive(dt);if(active&&!driving&&!sitting){let f=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),s=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);let len=Math.hypot(f,s);if(len){let speed=(swimming?2.7:keys.has('ShiftLeft')||keys.has('ShiftRight')?10:5.8)*dt/len,dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*speed,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*speed;if(valid(player.x+dx,player.z))player.x+=dx;if(valid(player.x,player.z+dz))player.z+=dz;avatar.rotation.y=Math.atan2(dx,dz);moving=true;step+=dt*10;}}
 swimming=!inside&&!driving&&!sitting&&shouldSwim(player.x,player.y,player.z);if(swimming){player.y=-.8+Math.sin(clock.elapsedTime*2.5)*.035;jumpVelocity=0;}
