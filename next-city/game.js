@@ -77,7 +77,7 @@ for(let lane=0;lane<2;lane++){
   for(let i=0;i<12;i++){const root=person(i%2?'yellow':'pink');root.removeFromParent();pedestrians.push({root,path,distance:path.length*(i+.3)/12,speed:1.05+(i%3)*.13,phase:i,profile:i%4,visits:0});}
   for(let i=0;i<4;i++){const root=car(0,0,palette[i%6]);root.removeFromParent();const collider={x:0,z:0,w:4.03,d:2.08};colliders.push(collider);traffic.push({root,path:trafficRoutes[lane],distance:trafficRoutes[lane].length*i/4,collider});}
 }
-const egorRoot=person('egor');egorRoot.scale.setScalar(1.05);pedestrians.push({root:egorRoot,path:walkingRoutes[0],distance:4,speed:1.15,phase:0,profile:0,visits:0,isEgor:true});
+const egorRoot=person('egor');egorRoot.scale.setScalar(1.05);pedestrians.push({root:egorRoot,path:walkingRoutes[0],distance:4,speed:1.15,phase:0,profile:0,visits:0,isEgor:false});
 function chooseWalk(actor){for(let attempt=0;attempt<walkDestinations.length;attempt++){actor.destination=(actor.destination+1)%walkDestinations.length;const path=walkNavigation.path(actor.root.position,walkDestinations[actor.destination]);if(path.length>1){actor.walk=path;actor.waypoint=1;return;}}actor.walk=[];}
 pedestrians.forEach((actor,i)=>{const initial=sample(actor.path,actor.distance),start=walkNavigation.nearest(initial);actor.root.position.set(start.x,surfaceHeight(start.x,start.z),start.z);actor.destination=i%walkDestinations.length;chooseWalk(actor);actor.root.updateMatrixWorld(true);});
 const instanceGroups=new Map();
@@ -108,7 +108,7 @@ function updateCity(dt){
   traffic.forEach((actor,i)=>{actor.distance=(actor.distance+advances[i])%actor.path.length;const p=sample(actor.path,actor.distance);actor.root.position.set(p.x,0,p.z);actor.root.rotation.y=Math.atan2(-p.dz,p.dx);Object.assign(actor.collider,{x:p.x,z:p.z,w:Math.abs(p.dx)*4.03+Math.abs(p.dz)*2.08,d:Math.abs(p.dz)*4.03+Math.abs(p.dx)*2.08});actor.root.updateMatrixWorld(true);});
   for(const batch of instanceGroups.values()){batch.parts.forEach((mesh,i)=>batch.mesh.setMatrixAt(i,mesh.matrixWorld));batch.mesh.instanceMatrix.needsUpdate=true;}
 }
-let avatar=person();avatar.scale.setScalar(.85);scene.add(avatar);avatar.rotation.y=Math.PI/2;const player=new THREE.Vector3(-73,0,11);let yaw=-Math.PI/2,pitch=.12,first=false,step=0;const keys=new Set();let active=true,sitting=false,swimming=false,jumpVelocity=0,jumpCount=0,jumpPeak=0;
+let avatar=person();avatar.scale.setScalar(.85);scene.add(avatar);avatar.rotation.y=Math.PI/2;const player=new THREE.Vector3(-73,0,11);let yaw=-Math.PI/2,pitch=.12,first=true,step=0;const keys=new Set();let active=true,sitting=false,swimming=false,jumpVelocity=0,jumpCount=0,jumpPeak=0;
 function reset(){sitting=false;swimming=false;if(driving){leaveCar();driving=false;}if(inside)exitBuilding();closeTalk();player.set(-73,surfaceHeight(-73,11),11);jumpVelocity=0;yaw=-Math.PI/2;pitch=.12;}function switchCamera(){first=!first;$('camera').textContent='Камера: '+(first?'от первого лица':'со стороны')+' · V';}
 $('camera').onclick=switchCamera;$('home').onclick=reset;
 const welcome=$('welcome');$('play').onclick=()=>{welcome.close();active=true};$('menuButton').onclick=()=>{keys.clear();active=false;welcome.showModal()};welcome.addEventListener('cancel',()=>{active=true});
