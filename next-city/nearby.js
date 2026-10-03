@@ -1,6 +1,6 @@
 // Only suggest activities that exist in this version of the city.
 const activities=[
- [/ДИСКОТЕКА/, 'Дискотека', 'можно зайти, послушать электронную музыку и посмотреть на диджея'],
+ [/ДИСКО/, 'Диско', 'можно зайти, послушать электронную музыку и посмотреть на диджея'],
  [/Книги/, 'Книжный магазин «Филд Парк»', 'можно зайти и рассмотреть книжные полки'],
  [/МЕГАЗИН/, 'Мегазин', 'можно зайти и осмотреть прилавок с хлебом'],
  [/ФУД МАРТ/, 'Фуд Март', 'можно зайти и посмотреть, как устроен магазин'],
@@ -14,6 +14,6 @@ export function nearbyActivities(position,buildings){
   const match=activities.find(([pattern])=>pattern.test(building.name));
   if(match)places.push({name:match[1],activity:match[2],x:building.doorX??building.x,z:building.doorZ??building.z});
  }
- const nearest=places.sort((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)-Math.hypot(b.x-position.x,b.z-position.z)).slice(0,2);
- return nearest.map((place,i)=>`${i?'Ещё рядом':'Ближе всего'} — ${place.name}${place.z*position.z<0?' через главную улицу':''}: ${place.activity}.`).join(' ');
+ const place=places.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<=Math.hypot(b.x-position.x,b.z-position.z)?a:b);
+ return `Ближе всего — ${place.name}${place.z*position.z<0?' через главную улицу':''}: ${place.activity}.`;
 }
