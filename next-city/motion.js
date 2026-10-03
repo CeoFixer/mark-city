@@ -1,4 +1,6 @@
 import {canWalk,onWalkway} from './layout.js?v=single-storey-6';
+// At the same gravity, 5.3 vs 5 gives about 12% more jump height.
+export const JUMP_SPEED=5.3;
 // Distances are world units. Closed routes keep movement continuous at the seam.
 export function route(points) {
   const segments=points.map((a,i)=>{const b=points[(i+1)%points.length],dx=b[0]-a[0],dz=b[1]-a[1];return {x:a[0],z:a[1],dx,dz,length:Math.hypot(dx,dz)}});

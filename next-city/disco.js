@@ -1,26 +1,47 @@
-// Original melody starts with the entrance gesture; sound settings live in the menu.
+import {createTechnoSynth,STEP_SECONDS,LOOP_STEPS,sectionAt} from './techno.js?v=techno-8';
+// Playback starts with an entrance gesture. All sound controls stay in the menu.
 export function createDiscoMusic(container){
  const controls=document.createElement('fieldset');controls.id='discoControls';
  const legend=document.createElement('legend');legend.textContent='Звук';
  const enabled=document.createElement('input');enabled.type='checkbox';enabled.id='discoMusic';enabled.checked=true;
  const label=document.createElement('label');label.append(enabled,document.createTextNode('Музыка в дискотеке'));
  const volume=document.createElement('input');volume.type='range';volume.min=0;volume.max=100;volume.value=70;volume.id='discoVolume';volume.setAttribute('aria-label','Громкость музыки');volume.title='Громкость музыки';
- controls.append(legend,label,volume);container.insertBefore(controls,container.querySelector('.primary'));
- let context,gain,analyser,samples,timer,inside=false,muted=false,beat=0,next=0;
- const notes=[392,493.88,587.32,493.88,349.22,440,523.26,440];
+ const retry=document.createElement('button');retry.type='button';retry.id='discoRetry';retry.textContent='Включить звук';retry.hidden=true;
+ const note=document.createElement('small');note.id='discoNote';note.style.flexBasis='100%';
+ controls.append(legend,label,volume,retry,note);container.insertBefore(controls,container.querySelector('.primary'));
+ let context,gain,analyser,samples,synth,timer,inside=false,muted=false,step=0,next=0,startId=0,startedAt=0;
+ const wanted=()=>inside&&!muted&&!document.hidden;
  const playing=()=>!!timer&&context?.state==='running';
-
- function stop(){if(timer){clearInterval(timer);timer=null;}if(gain&&context){gain.gain.setValueAtTime(0,context.currentTime);context.suspend().catch(()=>{});}}
- function tone(frequency,at,duration,type,level){const osc=context.createOscillator(),env=context.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency,at);env.gain.setValueAtTime(0,at);env.gain.linearRampToValueAtTime(level,at+.015);env.gain.linearRampToValueAtTime(level*.7,at+duration*.55);env.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(env);env.connect(gain);osc.start(at);osc.stop(at+duration+.01);osc.onended=()=>{osc.disconnect();env.disconnect();};}
- function schedule(){while(next<context.currentTime+.16){tone(notes[beat%notes.length],next,.27,'triangle',.3);if(beat%2===0)tone(130.81,next,.22,'sine',.4);if(beat%4===2)tone(784,next,.1,'sine',.1);beat++;next+=.3;}}
- async function sync(){if(!inside||muted||document.hidden){stop();return;}
-  const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio){enabled.disabled=true;volume.disabled=true;label.title='Браузер не поддерживает Web Audio';return;}
-  if(!context){context=new Audio();gain=context.createGain();analyser=context.createAnalyser();analyser.fftSize=256;samples=new Uint8Array(analyser.fftSize);gain.connect(analyser);analyser.connect(context.destination);}
-  try{await context.resume();}catch{return;}if(!inside||muted||document.hidden){stop();return;}
-  gain.gain.setValueAtTime(+volume.value*.004,context.currentTime);if(!timer){next=context.currentTime+.03;beat=0;schedule();timer=setInterval(schedule,80);}
+ function updateControls(){
+  retry.hidden=!inside||muted||playing();
+  note.textContent=muted?'Музыка выключена.':+volume.value===0?'Громкость музыки — 0.':!inside?'Электронный трек включится при входе в дискотеку.':playing()?'Оригинальный электронный трек · 128 BPM': 'Браузер ещё не включил звук. Нажми «Включить звук».';
  }
- enabled.onchange=()=>{muted=!enabled.checked;sync();};volume.oninput=sync;document.addEventListener('visibilitychange',sync);
- const unlock=()=>{if(inside&&!muted&&context?.state==='suspended')sync();};document.addEventListener('pointerdown',unlock);document.addEventListener('keydown',unlock);
- function state(){let signal=0;if(playing()){analyser.getByteTimeDomainData(samples);signal=Math.sqrt(samples.reduce((sum,v)=>sum+((v-128)/128)**2,0)/samples.length);}return {inside,muted,playing:playing(),volume:+volume.value,signal:Math.round(signal*100000)/100000};}
+ function stop(){startId++;if(timer){clearInterval(timer);timer=null;}synth?.stop();synth=null;if(gain&&context?.state!=='closed'){gain.gain.setValueAtTime(0,context.currentTime);context.suspend().catch(()=>{});}updateControls();}
+ function schedule(){
+  // Do not queue a burst of missed notes after a background tab or a slow frame.
+  if(next<context.currentTime-.15){const missed=Math.ceil((context.currentTime+.02-next)/STEP_SECONDS);step+=missed;next+=missed*STEP_SECONDS;}
+  while(next<context.currentTime+.16){synth.schedule(step++,next);next+=STEP_SECONDS;}
+ }
+ async function sync(){
+  if(!wanted()){stop();return;}
+  const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio){enabled.disabled=true;volume.disabled=true;retry.hidden=true;note.textContent='Этот браузер не поддерживает музыку игры.';return;}
+  if(!context||context.state==='closed'){
+   if(context)stop();
+   try{context=new Audio();}catch{note.textContent='Не удалось включить звук. Попробуй ещё раз.';retry.hidden=false;return;}
+   gain=context.createGain();gain.gain.value=0;analyser=context.createAnalyser();analyser.fftSize=256;samples=new Uint8Array(analyser.fftSize);gain.connect(analyser);analyser.connect(context.destination);context.addEventListener('statechange',updateControls);
+  }
+  const request=++startId;updateControls();
+  try{await context.resume();}catch{updateControls();return;}
+  if(request!==startId||!wanted()||context.state!=='running')return;
+  gain.gain.setValueAtTime(+volume.value*.004,context.currentTime);
+  if(!timer){synth=createTechnoSynth(context,gain);step=0;next=context.currentTime+.03;startedAt=next;schedule();timer=setInterval(schedule,40);}
+  updateControls();
+ }
+ enabled.onchange=()=>{muted=!enabled.checked;sync();};volume.oninput=()=>{updateControls();sync();};retry.onclick=sync;
+ document.addEventListener('visibilitychange',sync);
+ const unlock=()=>{if(wanted()&&(!context||context.state!=='running'))sync();};
+ document.addEventListener('pointerup',unlock);document.addEventListener('keydown',unlock);document.addEventListener('click',unlock);window.addEventListener('focus',unlock);
+ function state(){let signal=0;if(playing()){analyser.getByteTimeDomainData(samples);signal=Math.sqrt(samples.reduce((sum,v)=>sum+((v-128)/128)**2,0)/samples.length);}const audibleStep=context?Math.max(0,Math.floor((context.currentTime-startedAt)/STEP_SECONDS)):0;return {inside,muted,playing:playing(),volume:+volume.value,signal:Math.round(signal*100000)/100000,audioState:context?.state??'not-started',section:sectionAt(audibleStep),loopSeconds:LOOP_STEPS*STEP_SECONDS,voices:synth?.voiceCount??0};}
+ updateControls();
  return {enter(){inside=true;sync();},leave(){inside=false;stop();},state};
 }
