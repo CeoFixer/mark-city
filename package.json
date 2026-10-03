@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test motion.test.js city-data.test.js comics/game.test.js comics-3d/facing.test.js",
+    "test": "node --test motion.test.js city-data.test.js comics/game.test.js comics-3d/facing.test.js next-city/layout.test.js",
     "start": "python3 -m http.server 8080 --bind 127.0.0.1"
   }
 }
