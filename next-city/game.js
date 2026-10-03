@@ -1,7 +1,7 @@
 import * as THREE from '../vendor/three.module.js';
 import {sample,trafficRoutes,walkingRoutes,gait,surfaceHeight,verticalStep,riverSegments,shouldSwim,createWalkNavigation} from './motion.js';
-import {loadCity,loadGarage,saveGarage,buyCar,carOffers,defaultRoom,furnitureSizes} from './city-data.js';
-import {replyLine} from './dialogues.js';
+import {loadCity,loadGarage,saveGarage,buyCar,carOffers,defaultRoom,furnitureSizes} from './city-data.js?v=field-park-1';
+import {replyLine} from './dialogues.js?v=field-park-1';
 const cityEdits=loadCity(),baseCatalog=[];
 const $=id=>document.getElementById(id), canvas=$('world');
 let renderer;
@@ -33,7 +33,7 @@ const palette=[0xdeb0c8,0xe7ce64,0x6eb1c2,0xaf8dca,0xe88e7f,0xb0c5a0];
 function building(x,z,w,d,h,color,name='',roof=true){const id=mapBuildings.length;baseCatalog.push({x,z,w,d,h,color,name:name||`Дом №${id+1}`,roof});const edit=cityEdits.overrides[id];if(edit)({x,z,w,d,h,color,name,roof}=edit);cameraObstacles.push(box(x,h/2,z,w,h,d,color));colliders.push({x,z,w:w+.6,d:d+.6});const facing=z<0?1:-1;const front=z+facing*(d/2+.05);mapBuildings.push({id:mapBuildings.length,x,z,w,d,h,color,roof,name:name||`Дом №${mapBuildings.length+1}`,doorX:x,doorZ:front+facing*1.05,facing});
 const doorHeight=Math.min(h-.35,2.9);blueDoor(x,front,1.45,doorHeight);for(let i=-1;i<=1;i+=2)for(let row=0;row<Math.max(1,Math.floor(h/3));row++)box(x+i*w*.29,1.8+row*2.4,front,.85,1.1,.15,0x5b9cbe);
 if(roof){let r=new THREE.Mesh(new THREE.ConeGeometry(w*.76,1.7,4),mat(color));r.rotation.y=Math.PI/4;r.scale.z=d/w;r.position.set(x,h+.8,z);scene.add(r);}
-if(name){label(name,x,h-.55,front+facing*.1,Math.min(w-.3,9),facing);landmarks.push({x,z,name})}}
+if(name){if(!/^Дом №/.test(name))label(name,x,h-.55,front+facing*.1,Math.min(w-.3,9),facing);landmarks.push({x,z,name})}}
 // Buildings follow the photograph from left to right, north row then south row.
 for(const [x,n,c] of [[-78,28,0x5cadd0],[-65,30,0xefb260],[-53,32,0xc49b78],[-44,34,0xf0d750]])building(x,-21,9,12,6,c,'Дом №'+n);
 building(-22,-21,9,12,5,0xd391b6,'VIOLET · ЛОББИ',false);
@@ -42,12 +42,12 @@ for(const [x,n,c] of [[10,38,0x91bb83],[22,40,0xeaa2a5],[33,42,0xf0d85e],[43,44,
 building(-67,21,26,14,7,0xf0cc4f,'МЕГАЗИН',false);
 building(-47,21,10,14,7,0xe4dbd0,'ФУД МАРТ',false);
 building(-19,21,12,14,6,0xcab9a3,'ДИСКОТЕКА',false);
-building(-5,21,10,14,6,0xecd547,'ФИЛА ПАРК · Книги',false);
+building(-5,21,10,14,6,0xecd547,'ФИЛД ПАРК · Книги',false);
 building(61,20,12,12,7,0xe9c353,'ШКОЛА',false);
 const baseCount=baseCatalog.length;
 function tree(x,z,scale=1){if(mapBuildings.some(b=>Math.hypot(x-b.doorX,z-b.doorZ)<1.5||(Math.abs(x-b.x)<b.w/2+.7&&Math.abs(z-b.z)<b.d/2+.7)))return;cylinder(x,1.6*scale,z,.32*scale,3.2*scale,0x826345);cameraObstacles.push(ball(x,3.9*scale,z,1.6*scale,0x4e9165,scene,.9,1.25,.8));colliders.push({x,z,w:.6*scale,d:.6*scale});}
 for(const [x,z] of [[-57,-27],[-28,-26],[1,-25],[17,-27],[50,-28],[10,16],[12,25],[20,28],[28,16],[33,24],[73,-28]])tree(x,z,1.15);
-box(22,.03,20,35,.06,20,0x88b968);label('ФИЛА ПАРК',23,2.8,12,8,-1);
+box(22,.03,20,35,.06,20,0x88b968);label('ФИЛД ПАРК',23,2.8,12,8,-1);
 // Park bench and small snack kiosk.
 box(20,.6,21,3,.2,.7,0xb58b57);box(20,1.1,21.3,3,.8,.12,0xb58b57);for(const x of [19,21])box(x,.3,21,.13,.6,.6,0x566c59);
 colliders.push({x:20,z:21,w:3,d:.8});
