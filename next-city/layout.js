@@ -11,7 +11,7 @@ export const parkTrees=[[12,19],[12,27],[17,22],[18,26.5],[27,20],[29,26],[35,19
 export const destinations=[{x:-77,z:11},{x:-45,z:11},{x:-25,z:11},{x:-4,z:11},{x:23,z:17},{x:35,z:11},{x:61,z:11},{x:78,z:11},{x:77,z:-11},{x:54,z:-11},{x:20,z:-11},{x:-10,z:-11},{x:-60,z:-11}];
 // Roof pencil colors from Mark's drawing, separate from each house wall.
 export const houseRoofColors={
- 'Дом №28':0x246caa,'Дом №30':0x70a87a,'Дом №32':0x6e4d3c,'Дом №34':0xd6b639,
+ 'Дом №28':0x246caa,'Дом №30':0xd8c39e,'Дом №32':0x6e4d3c,'Дом №34':0xd6b639,
  'Дом №38':0x388e70,'Дом №40':0xc65342,'Дом №42':0xe0bd36,'Дом №44':0x745b92,
  'Дом №46':0xadb977,'Дом №48':0x94654c,'Дом №50':0x353535
 };
